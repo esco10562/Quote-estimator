@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quote Estimator</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #results {
+            margin-top: 20px;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .result-item {
+            margin-bottom: 10px;
+        }
+        .result-item span {
+            font-weight: bold;
+        }
+        #languageToggle {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+    </style></style>
+<link rel="manifest" href="manifest.json">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js');
+  }
+</script>
+</head>
+<body>
+    <div class="container">
+        <div id="languageToggle">
+            <button onclick="toggleLanguage()" id="langButton">Cambiar a Español</button>
+        </div>
+        <h1 id="title">Quote Estimator</h1>
+        <div class="input-group">
+            <label for="workers" id="workersLabel">Number of Workers:</label>
+            <input type="number" id="workers" min="1" value="1">
+        </div>
+        <div class="input-group">
+            <label for="days" id="daysLabel">Number of Days:</label>
+            <input type="number" id="days" min="1" value="1">
+        </div>
+        <div class="input-group">
+            <label for="materials" id="materialsLabel">Cost of Materials ($):</label>
+            <input type="number" id="materials" min="0" value="0">
+        </div>
+        <button onclick="calculateAndDisplayQuote()" id="calculateButton">Calculate Quote</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let isEnglish = true;
+
+        const translations = {
+            title: {en: "Quote Estimator", es: "Estimador de Cotización"},
+            workersLabel: {en: "Number of Workers:", es: "Número de Trabajadores:"},
+            daysLabel: {en: "Number of Days:", es: "Número de Días:"},
+            materialsLabel: {en: "Cost of Materials ($):", es: "Costo de Materiales ($):"},
+            calculateButton: {en: "Calculate Quote", es: "Calcular Cotización"},
+            langButton: {en: "Cambiar a Español", es: "Switch to English"},
+            fernandoPay: {en: "Fernando's Pay:", es: "Pago de Fernando:"},
+            totalLaborCost: {en: "Total Labor Cost:", es: "Costo Total de Mano de Obra:"},
+            totalCostMaterialsLabor: {en: "Total Cost (Materials + Labor):", es: "Costo Total (Materiales + Mano de Obra):"},
+            overheadCost: {en: "Overhead Cost:", es: "Costo de Operación:"},
+            finalCost: {en: "Final Cost:", es: "Costo Final:"},
+            profit: {en: "Profit:", es: "Ganancia:"},
+            totalQuote: {en: "Total Quote:", es: "Cotización Total:"}
+        };
+
+        function toggleLanguage() {
+            isEnglish = !isEnglish;
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const lang = isEnglish ? 'en' : 'es';
+            document.getElementById('title').textContent = translations.title[lang];
+            document.getElementById('workersLabel').textContent = translations.workersLabel[lang];
+            document.getElementById('daysLabel').textContent = translations.daysLabel[lang];
+            document.getElementById('materialsLabel').textContent = translations.materialsLabel[lang];
+            document.getElementById('calculateButton').textContent = translations.calculateButton[lang];
+            document.getElementById('langButton').textContent = translations.langButton[lang];
+            calculateAndDisplayQuote();
+        }
+
+        function calculateQuote(workers, days, materials) {
+            const workerRate = 200;
+            const fernandoRate = 250;
+            const overheadPercentage = 0.25;
+            const profitPercentage = 0.20;
+
+            const fernandoPay = fernandoRate * days;
+            const laborCost = (workers * workerRate * days) + fernandoPay;
+            const totalCostMaterialsLabor = materials + laborCost;
+            const overheadCost = totalCostMaterialsLabor * overheadPercentage;
+            const finalCost = totalCostMaterialsLabor + overheadCost;
+            const profit = finalCost * profitPercentage;
+            const totalQuote = finalCost + profit;
+
+            return {
+                fernandoPay: fernandoPay.toFixed(2),
+                totalLaborCost: laborCost.toFixed(2),
+                totalCostMaterialsLabor: totalCostMaterialsLabor.toFixed(2),
+                overheadCost: overheadCost.toFixed(2),
+                finalCost: finalCost.toFixed(2),
+                profit: profit.toFixed(2),
+                totalQuote: totalQuote.toFixed(2)
+            };
+        }
+
+        function calculateAndDisplayQuote() {
+            const workers = parseInt(document.getElementById('workers').value);
+            const days = parseInt(document.getElementById('days').value);
+            const materials = parseFloat(document.getElementById('materials').value);
+
+            const quote = calculateQuote(workers, days, materials);
+            const lang = isEnglish ? 'en' : 'es';
+
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="result-item"><span>${translations.fernandoPay[lang]}</span> $${quote.fernandoPay}</div>
+                <div class="result-item"><span>${translations.totalLaborCost[lang]}</span> $${quote.totalLaborCost}</div>
+                <div class="result-item"><span>${translations.totalCostMaterialsLabor[lang]}</span> $${quote.totalCostMaterialsLabor}</div>
+                <div class="result-item"><span>${translations.overheadCost[lang]}</span> $${quote.overheadCost}</div>
+                <div class="result-item"><span>${translations.finalCost[lang]}</span> $${quote.finalCost}</div>
+                <div class="result-item"><span>${translations.profit[lang]}</span> $${quote.profit}</div>
+                <div class="result-item"><span>${translations.totalQuote[lang]}</span> $${quote.totalQuote}</div>
+            `;
+        }
+    </script>
+</body>
+</html>
