@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quote Estimator</title>
+    <link rel="manifest" href="manifest.json">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+              .then(function(registration) {
+                console.log('Service Worker registered with scope:', registration.scope);
+              })
+              .catch(function(error) {
+                console.log('Service Worker registration failed:', error);
+              });
+        }
+    </script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -70,13 +82,7 @@
             margin-bottom: 20px;
             text-align: right;
         }
-    </style></style>
-<link rel="manifest" href="manifest.json">
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
+    </style>
 </head>
 <body>
     <div class="container">
@@ -116,6 +122,7 @@
             overheadCost: {en: "Overhead Cost:", es: "Costo de Operación:"},
             finalCost: {en: "Final Cost:", es: "Costo Final:"},
             profit: {en: "Profit:", es: "Ganancia:"},
+            salesTax: {en: "Sales Tax (8.38%):", es: "Impuesto sobre Ventas (8.38%):"},
             totalQuote: {en: "Total Quote:", es: "Cotización Total:"}
         };
 
@@ -140,6 +147,7 @@
             const fernandoRate = 250;
             const overheadPercentage = 0.25;
             const profitPercentage = 0.20;
+            const salesTaxRate = 0.0838;
 
             const fernandoPay = fernandoRate * days;
             const laborCost = (workers * workerRate * days) + fernandoPay;
@@ -147,7 +155,9 @@
             const overheadCost = totalCostMaterialsLabor * overheadPercentage;
             const finalCost = totalCostMaterialsLabor + overheadCost;
             const profit = finalCost * profitPercentage;
-            const totalQuote = finalCost + profit;
+            const subtotal = finalCost + profit;
+            const salesTax = subtotal * salesTaxRate;
+            const totalQuote = subtotal + salesTax;
 
             return {
                 fernandoPay: fernandoPay.toFixed(2),
@@ -156,6 +166,7 @@
                 overheadCost: overheadCost.toFixed(2),
                 finalCost: finalCost.toFixed(2),
                 profit: profit.toFixed(2),
+                salesTax: salesTax.toFixed(2),
                 totalQuote: totalQuote.toFixed(2)
             };
         }
@@ -176,6 +187,7 @@
                 <div class="result-item"><span>${translations.overheadCost[lang]}</span> $${quote.overheadCost}</div>
                 <div class="result-item"><span>${translations.finalCost[lang]}</span> $${quote.finalCost}</div>
                 <div class="result-item"><span>${translations.profit[lang]}</span> $${quote.profit}</div>
+                <div class="result-item"><span>${translations.salesTax[lang]}</span> $${quote.salesTax}</div>
                 <div class="result-item"><span>${translations.totalQuote[lang]}</span> $${quote.totalQuote}</div>
             `;
         }
